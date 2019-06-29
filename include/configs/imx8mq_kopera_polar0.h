@@ -101,65 +101,79 @@
 
 /* Initial environment variables */
 #define CONFIG_EXTRA_ENV_SETTINGS		\
-	"bootlimit=5\0"	\
-	"bootdir=/boot\0"	\
-	"script=boot.scr\0" \
+	"bootdir=/boot\0" \
 	"image=Image.gz\0" \
-	"console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200\0" \
-	"img_addr=0x42000000\0"			\
-	"fdt_addr=0x43000000\0"			\
-	"fdt_high=0xffffffffffffffff\0"		\
-	"boot_fdt=try\0" \
 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
-	"initrd_addr=0x43800000\0"		\
+	"console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200\0" \
+	\
+	"img_addr=0x42000000\0" \
+	"fdt_addr=0x43000000\0" \
+	"fdt_high=0xffffffffffffffff\0" \
+	"initrd_addr=0x43800000\0" \
 	"initrd_high=0xffffffffffffffff\0" \
-	"video=HDMI-A-1:1920x1080-32@60\0" \
+	\
+	"BOOT_ORDER=A B\0" \
+	"BOOT_A_LEFT=3\0" \
+	"BOOT_B_LEFT=3\0" \
+	"BOOT_STATE_RESET_CMD=setenv BOOT_ORDER \"A B\"; " \
+		"setenv BOOT_A_LEFT 3; " \
+		"setenv BOOT_B_LEFT 3; " \
+		"saveenv;\0" \
+	\
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
-	"mmcroot=" CONFIG_MMCROOT " rootfstype=ext4 rootwait\0" \
-	"mmcautodetect=no\0" \
-	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
-	"mmcargs=setenv bootargs console=${console} root=${mmcroot} video=${video}\0 " \
-	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${script};\0" \
-	"bootscript=echo Running bootscript from mmc ...; " \
-		"source\0" \
-	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
-		"unzip ${img_addr} ${loadaddr}\0" \
-	"loadfdt=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file}\0" \
-	"mmcboot=echo Booting from mmc ...; " \
-		"run mmcargs; " \
-		"run optargs; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"if run loadfdt; then " \
-				"booti ${loadaddr} - ${fdt_addr}; " \
-			"else " \
-				"echo WARN: Cannot load the DT; " \
+	"mmcroot=" CONFIG_MMCROOT "\0" \
+	"mmcloadimagecmd=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image}; " \
+		"unzip ${img_addr} ${loadaddr};\0" \
+	"mmcloadfdtcmd=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file};\0" \
+	"mmcselectpartcmd=setenv mmcpart; " \
+		"for BOOT_SLOT in \"${BOOT_ORDER}\"; do " \
+			"if test \"x${mmcpart}\" = \"x\"; then " \
+				"if test \"x${BOOT_SLOT}\" = \"xA\"; then " \
+					"if test ${BOOT_A_LEFT} -gt 0; then " \
+						"setexpr BOOT_A_LEFT ${BOOT_A_LEFT} - 1; " \
+						"echo \"Found valid slot A, ${BOOT_A_LEFT} attempts remaining\"; " \
+						"setenv mmcpart 1; " \
+						"raucslot=\"A\"; " \
+					"fi; " \
+				"elif test \"x${BOOT_SLOT}\" = \"xB\"; then " \
+					"if test ${BOOT_B_LEFT} -gt 0; then " \
+						"setexpr BOOT_B_LEFT ${BOOT_B_LEFT} - 1; " \
+						"echo \"Found valid slot B, ${BOOT_B_LEFT} attempts remaining\"; " \
+						"setenv mmcpart 2; " \
+						"raucslot=\"B\"; " \
+					"fi; " \
+				"fi; " \
 			"fi; " \
+		"done; " \
+		"if test -n \"${mmcpart}\"; then " \
+			"setenv mmcroot /dev/mmcblk${mmcdev}p${mmcpart}; " \
+			"setenv bootargs console=${console} root=${mmcroot} rootwait vt.global_cursor_default=0 panic=-1 rauc.slot=${raucslot}; " \
+			"saveenv; " \
 		"else " \
-			"echo wait for boot; " \
+			"echo \"No valid slot found, resetting tries to 3\"; " \
+			"setenv BOOT_A_LEFT 3; " \
+			"setenv BOOT_B_LEFT 3; " \
+			"saveenv; " \
+			"reset; " \
 		"fi;\0" \
-	"altbootcmd=echo Switching partition due to boot failure; " \
-		"if test ${mmcpart} = 1 ; then " \
-			"setenv mmcpart 2 ; " \
-			"setenv mmcroot /dev/mmcblk0p2 ;" \
+	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadfdtcmd; " \
+		"booti ${loadaddr} - ${fdt_addr}; " \
+	"fi;\0" \
+	"mmcrecoverycmd=echo \"Initialising recovery\"; " \
+		"if usb reset && load usb 0 ${loadaddr} polarfw.bin; then " \
+			"echo \"Firmware image size : 0x${filesize} bytes.\"; " \
+			"echo \"Flashing image to mmc 0\"; " \
+			"echo \"DO NOT REMOVE POWER OR RESET UNTILL THIS PROCESS IS FINISHED\"; " \
+			"gzwrite mmc 0 ${loadaddr} ${filesize}; " \
+			"run BOOT_STATE_RESET_CMD; " \
 		"else " \
-			"setenv mmcpart 1 ; " \
-			"setenv mmcroot /dev/mmcblk0p1 ;" \
-		"fi;" \
-		"setenv bootcount 0 ;" \
-		"saveenv ; " \
-		"run bootcmd ;\0"
+			"echo \"Failed to load firmware file from USB 0\"; " \
+		"fi; " \
+		"reset;\0" \
 
 #define CONFIG_BOOTCOMMAND \
-	   "mmc dev ${mmcdev}; if mmc rescan; then " \
-		   "if run loadbootscript; then " \
-			   "run bootscript; " \
-		   "else " \
-			   "if run loadimage; then " \
-				   "run mmcboot; " \
-			   "fi; " \
-		   "fi; " \
-	   "else booti ${loadaddr} - ${fdt_addr}; fi"
+	"mmc dev ${mmcdev}; run mmcbootcmd;"
 
 /* Link Definitions */
 #define CONFIG_LOADADDR			0x40480000
@@ -176,7 +190,6 @@
 #define CONFIG_ENV_OFFSET               (64 * SZ_64K)
 #define CONFIG_ENV_SIZE			0x1000
 #define CONFIG_SYS_MMC_ENV_DEV		0   /* eMMC */
-#define CONFIG_MMCROOT			"/dev/mmcblk0p1"  /* eMMC : partition 1 */
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		((CONFIG_ENV_SIZE + (2*1024) + (16*1024)) * 1024)
@@ -214,6 +227,7 @@
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
 #define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
+#define CONFIG_MMCROOT			"/dev/mmcblk0p1"  /* eMMC : partition 1 */
 #define CONFIG_SYS_MMC_IMG_LOAD_PART	1
 
 #define CONFIG_MXC_GPIO
