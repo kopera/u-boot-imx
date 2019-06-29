@@ -173,7 +173,7 @@
 		"reset;\0" \
 
 #define CONFIG_BOOTCOMMAND \
-	"mmc dev ${mmcdev}; run mmcbootcmd;"
+	"run mmcbootcmd;"
 
 /* Link Definitions */
 #define CONFIG_LOADADDR			0x40480000

@@ -85,6 +85,25 @@ int ft_board_setup(void *blob, bd_t *bd)
 }
 #endif
 
+#define VOLUME_UP_KEY		IMX_GPIO_NR(3, 25)
+#define VOLUME_UP_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
+
+static iomux_v3_cfg_t const volume_up_pads[] = {
+	IMX8MQ_PAD_SAI5_RXD3__GPIO3_IO24 | MUX_PAD_CTRL(VOLUME_UP_PAD_CTRL),
+};
+
+static int board_gpio_init(void)
+{
+	/* We are only interested in the '+' key i.e. volume up key.
+		We use it as a signal to check for recovery mode
+	*/
+	imx_iomux_v3_setup_multiple_pads(volume_up_pads, ARRAY_SIZE(volume_up_pads));
+	gpio_request(VOLUME_UP_KEY, "VOLUME_UP");
+	gpio_direction_input(VOLUME_UP_KEY);
+
+	return 0;
+}
+
 #ifdef CONFIG_USB_DWC3
 
 #define USB_PHY_CTRL0			0xF0040
@@ -166,6 +185,7 @@ int board_usb_cleanup(int index, enum usb_init_type init)
 
 int board_init(void)
 {
+	board_gpio_init();
 
 #if defined(CONFIG_USB_DWC3) || defined(CONFIG_USB_XHCI_IMX8M)
 	init_usb_clk();
@@ -192,6 +212,13 @@ int board_late_init(void)
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();
 #endif
+
+	if (gpio_get_value(VOLUME_UP_KEY) == 1) {
+		printf("Recovery mode enabled\n");
+		env_set("bootcmd", "run mmcrecoverycmd");
+	} else {
+		env_set("bootcmd", "run mmcbootcmd");
+	}
 
 	return 0;
 }
