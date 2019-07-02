@@ -115,14 +115,11 @@
 	"BOOT_ORDER=A B\0" \
 	"BOOT_A_LEFT=3\0" \
 	"BOOT_B_LEFT=3\0" \
-	"BOOT_STATE_RESET_CMD=setenv BOOT_ORDER \"A B\"; " \
-		"setenv BOOT_A_LEFT 3; " \
-		"setenv BOOT_B_LEFT 3; " \
-		"saveenv;\0" \
 	\
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT "\0" \
+	"mmcbootargs=console=${console} root=${mmcroot} rootwait vt.global_cursor_default=0 panic=-1\0" \
 	"mmcloadimagecmd=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image}; " \
 		"unzip ${img_addr} ${loadaddr};\0" \
 	"mmcloadfdtcmd=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file};\0" \
@@ -134,21 +131,18 @@
 						"setexpr BOOT_A_LEFT ${BOOT_A_LEFT} - 1; " \
 						"echo \"Found valid slot A, ${BOOT_A_LEFT} attempts remaining\"; " \
 						"setenv mmcpart 1; " \
-						"raucslot=\"A\"; " \
 					"fi; " \
 				"elif test \"x${BOOT_SLOT}\" = \"xB\"; then " \
 					"if test ${BOOT_B_LEFT} -gt 0; then " \
 						"setexpr BOOT_B_LEFT ${BOOT_B_LEFT} - 1; " \
 						"echo \"Found valid slot B, ${BOOT_B_LEFT} attempts remaining\"; " \
 						"setenv mmcpart 2; " \
-						"raucslot=\"B\"; " \
 					"fi; " \
 				"fi; " \
 			"fi; " \
 		"done; " \
 		"if test -n \"${mmcpart}\"; then " \
 			"setenv mmcroot /dev/mmcblk${mmcdev}p${mmcpart}; " \
-			"setenv bootargs console=${console} root=${mmcroot} rootwait vt.global_cursor_default=0 panic=-1 rauc.slot=${raucslot}; " \
 			"saveenv; " \
 		"else " \
 			"echo \"No valid slot found, resetting tries to 3\"; " \
@@ -158,6 +152,7 @@
 			"reset; " \
 		"fi;\0" \
 	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadfdtcmd; then " \
+		"setenv bootargs ${mmcbootargs}; " \
 		"booti ${loadaddr} - ${fdt_addr}; " \
 	"fi;\0" \
 	"mmcrecoverycmd=echo \"Initialising recovery\"; " \
@@ -166,11 +161,10 @@
 			"echo \"Flashing image to mmc 0\"; " \
 			"echo \"DO NOT REMOVE POWER OR RESET UNTIL THIS PROCESS IS FINISHED\"; " \
 			"gzwrite mmc 0 ${loadaddr} ${filesize}; " \
-			"run BOOT_STATE_RESET_CMD; " \
+			"reset; " \
 		"else " \
 			"echo \"Failed to load firmware file from USB 0\"; " \
-		"fi; " \
-		"reset;\0" \
+		"fi;\0" \
 
 #define CONFIG_BOOTCOMMAND \
 	"run mmcbootcmd;"
