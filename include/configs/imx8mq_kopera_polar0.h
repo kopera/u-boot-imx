@@ -157,14 +157,14 @@
 			"saveenv; " \
 			"reset; " \
 		"fi;\0" \
-	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadfdtcmd; " \
+	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadfdtcmd; then " \
 		"booti ${loadaddr} - ${fdt_addr}; " \
 	"fi;\0" \
 	"mmcrecoverycmd=echo \"Initialising recovery\"; " \
 		"if usb reset && load usb 0 ${loadaddr} polarfw.bin; then " \
 			"echo \"Firmware image size : 0x${filesize} bytes.\"; " \
 			"echo \"Flashing image to mmc 0\"; " \
-			"echo \"DO NOT REMOVE POWER OR RESET UNTILL THIS PROCESS IS FINISHED\"; " \
+			"echo \"DO NOT REMOVE POWER OR RESET UNTIL THIS PROCESS IS FINISHED\"; " \
 			"gzwrite mmc 0 ${loadaddr} ${filesize}; " \
 			"run BOOT_STATE_RESET_CMD; " \
 		"else " \
