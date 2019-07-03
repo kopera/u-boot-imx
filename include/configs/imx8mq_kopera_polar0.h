@@ -119,7 +119,6 @@
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT "\0" \
-	"mmcbootargs=console=${console} root=${mmcroot} rootwait vt.global_cursor_default=0 panic=-1\0" \
 	"mmcloadimagecmd=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image}; " \
 		"unzip ${img_addr} ${loadaddr};\0" \
 	"mmcloadfdtcmd=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file};\0" \
@@ -152,7 +151,7 @@
 			"reset; " \
 		"fi;\0" \
 	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadfdtcmd; then " \
-		"setenv bootargs ${mmcbootargs}; " \
+		"setenv bootargs console=${console} root=${mmcroot} rootwait vt.global_cursor_default=0 panic=-1; " \
 		"booti ${loadaddr} - ${fdt_addr}; " \
 	"fi;\0" \
 	"mmcrecoverycmd=echo \"Initialising recovery\"; " \
