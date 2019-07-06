@@ -22,7 +22,7 @@
 #include <mmc.h>
 #include <asm/arch/imx8m_ddr.h>
 
-#include "../common/imx8m_eeprom.h"
+#include "../common/variscite/imx8m_eeprom.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 

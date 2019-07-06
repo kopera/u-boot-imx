@@ -87,7 +87,7 @@ int ft_board_setup(void *blob, bd_t *bd)
 #define VOLUME_UP_PAD_CTRL	(PAD_CTL_DSE6 | PAD_CTL_HYS | PAD_CTL_PUE)
 
 static iomux_v3_cfg_t const volume_up_pads[] = {
-	IMX8MQ_PAD_SAI5_RXD3__GPIO3_IO24 | MUX_PAD_CTRL(VOLUME_UP_PAD_CTRL),
+	IMX8MM_PAD_SAI5_RXD3_GPIO3_IO24 | MUX_PAD_CTRL(VOLUME_UP_PAD_CTRL),
 };
 
 static int board_gpio_init(void)

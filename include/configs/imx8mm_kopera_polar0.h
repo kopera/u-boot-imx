@@ -155,11 +155,11 @@
 		"booti ${loadaddr} - ${fdt_addr}; " \
 	"fi;\0" \
 	"mmcrecoverycmd=echo \"Initialising recovery\"; " \
-		"if usb reset && load usb 0 ${loadaddr} polarfw.bin; then " \
+		"if usb reset && load usb 0 ${loadaddr} imx8mm-kopera-polar0-fw.bin; then " \
 			"echo \"Firmware image size : 0x${filesize} bytes.\"; " \
-			"echo \"Flashing image to mmc 0\"; " \
+			"echo \"Flashing image to mmc ${mmcdev}\"; " \
 			"echo \"DO NOT REMOVE POWER OR RESET UNTIL THIS PROCESS IS FINISHED\"; " \
-			"gzwrite mmc 0 ${loadaddr} ${filesize}; " \
+			"gzwrite mmc ${mmcdev} ${loadaddr} ${filesize}; " \
 			"reset; " \
 		"else " \
 			"echo \"Failed to load firmware file from USB 0\"; " \
@@ -190,6 +190,7 @@
 
 #define CONFIG_SYS_SDRAM_BASE           0x40000000
 #define PHYS_SDRAM                      0x40000000
+#define PHYS_SDRAM_SIZE                 0xC0000000 /* 3GB DDR */
 #define DEFAULT_DRAM_SIZE_MB            512
 #define CONFIG_NR_DRAM_BANKS            1
 
