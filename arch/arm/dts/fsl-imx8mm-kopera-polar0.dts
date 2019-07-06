@@ -19,12 +19,12 @@
 #include "fsl-imx8mm.dtsi"
 
 / {
-	model = "KOPERA Polar v0";
-	compatible = "kopera,imx8mm-kopera-polar0", "variscite,imx8mm-dart", "fsl,imx8mm";
+	model = "KOPERA Polar v0 (imx8mm)";
+	compatible = "kopera,imx8mm-kopera-polar0", "fsl,imx8mm";
 
 	chosen {
-		bootargs = "console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200";
-		stdout-path = &uart2;
+		bootargs = "console=ttymxc1,115200 earlycon=ec_imx6q,0x30860000,115200";
+		stdout-path = &uart1;
 	};
 
 	reg_usdhc2_vmmc: regulator-usdhc2 {
@@ -39,40 +39,10 @@
 	};
 };
 
-
-
-
-
-
-
-
-
-
 &iomuxc {
 	pinctrl-names = "default";
 
 	imx8mm-kopera-polar0 {
-		pinctrl_fec1: fec1grp {
-			fsl,pins = <
-				MX8MM_IOMUXC_ENET_MDC_ENET1_MDC			0x3
-				MX8MM_IOMUXC_ENET_MDIO_ENET1_MDIO		0x3
-				MX8MM_IOMUXC_ENET_TD3_ENET1_RGMII_TD3		0x1f
-				MX8MM_IOMUXC_ENET_TD2_ENET1_RGMII_TD2		0x1f
-				MX8MM_IOMUXC_ENET_TD1_ENET1_RGMII_TD1		0x1f
-				MX8MM_IOMUXC_ENET_TD0_ENET1_RGMII_TD0		0x1f
-				MX8MM_IOMUXC_ENET_RD3_ENET1_RGMII_RD3		0x91
-				MX8MM_IOMUXC_ENET_RD2_ENET1_RGMII_RD2		0x91
-				MX8MM_IOMUXC_ENET_RD1_ENET1_RGMII_RD1		0x91
-				MX8MM_IOMUXC_ENET_RD0_ENET1_RGMII_RD0		0x91
-				MX8MM_IOMUXC_ENET_TXC_ENET1_RGMII_TXC		0x1f
-				MX8MM_IOMUXC_ENET_RXC_ENET1_RGMII_RXC		0x91
-				MX8MM_IOMUXC_ENET_RX_CTL_ENET1_RGMII_RX_CTL	0x91
-				MX8MM_IOMUXC_ENET_TX_CTL_ENET1_RGMII_TX_CTL	0x1f
-				MX8MM_IOMUXC_GPIO1_IO09_GPIO1_IO9		0x41
-				MX8MM_IOMUXC_GPIO1_IO07_GPIO1_IO7 		0x41
-			>;
-		};
-
 		pinctrl_i2c1: i2c1grp {
 			fsl,pins = <
 				MX8MM_IOMUXC_I2C1_SCL_I2C1_SCL			0x400001c3
@@ -100,10 +70,10 @@
 			>;
 		};
 
-		pinctrl_uart2: uart1grp {
+		pinctrl_uart1: uart1grp {
 			fsl,pins = <
-				MX8MM_IOMUXC_UART2_RXD_UART2_DCE_RX		0x49
-				MX8MM_IOMUXC_UART2_TXD_UART2_DCE_TX		0x49
+				MX8MM_IOMUXC_UART1_RXD_UART1_DCE_RX		0x49
+				MX8MM_IOMUXC_UART1_TXD_UART1_DCE_TX		0x49
 			>;
 		};
 
@@ -374,32 +344,10 @@
 	status = "okay";
 };
 
-&fec1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_fec1>;
-	phy-mode = "rgmii";
-	phy-handle = <&ethphy0>;
-	fsl,magic-packet;
-	status = "okay";
-
-	mdio {
-		#address-cells = <1>;
-		#size-cells = <0>;
-
-		ethphy0: ethernet-phy@0 {
-			compatible = "ethernet-phy-ieee802.3-c22";
-			reg = <0>;
-			at803x,led-act-blind-workaround;
-			at803x,eee-okay;
-			at803x,vddio-1p8v;
-		};
-	};
-};
-
 /* console */
-&uart2 {
+&uart1 {
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart2>;
+	pinctrl-0 = <&pinctrl_uart1>;
 	status = "okay";
 };
 
