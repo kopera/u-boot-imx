@@ -116,7 +116,7 @@
 	"BOOT_B_LEFT=3\0" \
 	\
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcrootdev="__stringify(CONFIG_SYS_MMC_ENV_DEV + 1)"\0" \
+	"mmcrootdev=2\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT "\0" \
 	"mmcloadimagecmd=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image}; " \
@@ -222,9 +222,9 @@
 #define CONFIG_SYS_FSL_USDHC_NUM	2
 #define CONFIG_SYS_FSL_ESDHC_ADDR       0
 
-#define CONFIG_SUPPORT_EMMC_BOOT	/* eMMC specific */
-#define CONFIG_MMCROOT			"/dev/mmcblk2p1"  /* eMMC : partition 1 */
-#define CONFIG_SYS_MMC_IMG_LOAD_PART	1
+#define CONFIG_SUPPORT_EMMC_BOOT       /* eMMC specific */
+#define CONFIG_MMCROOT                 "/dev/mmcblk2p1"  /* eMMC : partition 1 */
+#define CONFIG_SYS_MMC_IMG_LOAD_PART   1
 
 #define CONFIG_MXC_GPIO
 
