@@ -72,8 +72,8 @@ config TARGET_IMX8MQ_KOPERA_POLAR0
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
 
-config TARGET_IMX8MM_KOPERA_POLAR0
-	bool "imx8mm_kopera_polar0"
+config TARGET_IMX8MM_KOPERA_POLAR1
+	bool "imx8mm_kopera_polar1"
 	select IMX8MM
 	select SUPPORT_SPL
 	select IMX8M_LPDDR4
@@ -91,6 +91,6 @@ source "board/freescale/imx8mm_evk/Kconfig"
 source "board/freescale/imx8mm_val/Kconfig"
 
 source "board/kopera/imx8mq_kopera_polar0/Kconfig"
-source "board/kopera/imx8mm_kopera_polar0/Kconfig"
+source "board/kopera/imx8mm_kopera_polar1/Kconfig"
 
 endif

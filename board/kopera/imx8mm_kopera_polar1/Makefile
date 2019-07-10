@@ -11,5 +11,5 @@ ifdef CONFIG_SPL_BUILD
 obj-y += spl.o
 obj-$(CONFIG_IMX8M_LPDDR4) += lpddr4_timing.o
 else
-obj-y += imx8mm_kopera_polar0.o ../common/mmc.o
+obj-y += imx8mm_kopera_polar1.o ../common/mmc.o
 endif

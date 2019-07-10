@@ -19,8 +19,8 @@
 #include "fsl-imx8mm.dtsi"
 
 / {
-	model = "KOPERA Polar v0 (imx8mm)";
-	compatible = "kopera,imx8mm-kopera-polar0", "fsl,imx8mm";
+	model = "KOPERA Polar v1 (imx8mm)";
+	compatible = "kopera,imx8mm-kopera-polar1", "fsl,imx8mm";
 
 	chosen {
 		bootargs = "console=ttymxc1,115200 earlycon=ec_imx6q,0x30860000,115200";
@@ -42,7 +42,7 @@
 &iomuxc {
 	pinctrl-names = "default";
 
-	imx8mm-kopera-polar0 {
+	imx8mm-kopera-polar1 {
 		pinctrl_i2c1: i2c1grp {
 			fsl,pins = <
 				MX8MM_IOMUXC_I2C1_SCL_I2C1_SCL			0x400001c3

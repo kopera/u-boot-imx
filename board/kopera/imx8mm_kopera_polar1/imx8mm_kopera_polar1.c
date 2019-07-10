@@ -137,8 +137,8 @@ int mmc_map_to_kernel_blk(int devno)
 
 int board_late_init(void)
 {
-	env_set("board_name", "imx8mm-kopera-polar0");
-	env_set("board_rev", "0");
+	env_set("board_name", "imx8mm-kopera-polar1");
+	env_set("board_rev", "1.3");
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 	board_late_mmc_env_init();

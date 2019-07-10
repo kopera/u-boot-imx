@@ -6,8 +6,8 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#ifndef __IMX8MM_KOPERA_POLAR0_H
-#define __IMX8MM_KOPERA_POLAR0_H
+#ifndef __IMX8MM_KOPERA_POLAR1_H
+#define __IMX8MM_KOPERA_POLAR1_H
 
 #include <linux/sizes.h>
 #include <asm/arch/imx-regs.h>
@@ -115,6 +115,8 @@
 	"BOOT_A_LEFT=3\0" \
 	"BOOT_B_LEFT=3\0" \
 	\
+	"commonbootargs=rootwait vt.global_cursor_default=0 panic=-1\0" \
+	\
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
 	"mmcrootdev=2\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
@@ -151,11 +153,11 @@
 			"reset; " \
 		"fi;\0" \
 	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadfdtcmd; then " \
-		"setenv bootargs console=${console} root=${mmcroot} rootwait vt.global_cursor_default=0 panic=-1; " \
+		"setenv bootargs console=${console} root=${mmcroot} ${commonbootargs}; " \
 		"booti ${loadaddr} - ${fdt_addr}; " \
 	"fi;\0" \
 	"mmcrecoverycmd=echo \"Initialising recovery\"; " \
-		"if usb reset && load usb 0 ${loadaddr} imx8mm-kopera-polar0-fw.bin; then " \
+		"if usb reset && load usb 0 ${loadaddr} imx8mm-kopera-polar1.wic.gz; then " \
 			"echo \"Firmware image size : 0x${filesize} bytes.\"; " \
 			"echo \"Flashing image to mmc ${mmcdev}\"; " \
 			"echo \"DO NOT REMOVE POWER OR RESET UNTIL THIS PROCESS IS FINISHED\"; " \
@@ -163,6 +165,7 @@
 			"reset; " \
 		"else " \
 			"echo \"Failed to load firmware file from USB 0\"; " \
+			"run mmcbootcmd; " \
 		"fi;\0" \
 
 #define CONFIG_BOOTCOMMAND \
