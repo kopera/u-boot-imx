@@ -99,6 +99,8 @@
 #define CONFIG_PHY_ATHEROS
 #endif
 
+#define CONFIG_SYS_BOOTM_LEN		0xF000000
+
 /* Initial environment variables */
 #define CONFIG_EXTRA_ENV_SETTINGS		\
 	"bootdir=/boot\0" \
