@@ -156,15 +156,13 @@
 		"setenv bootargs console=${console} root=${mmcroot} rootwait vt.global_cursor_default=0 panic=-1; " \
 		"booti ${loadaddr} - ${fdt_addr}; " \
 	"fi;\0" \
-	"mmcrecoverycmd=echo \"Initialising recovery\"; " \
-		"if usb reset && load usb 0 ${loadaddr} polarfw.bin; then " \
-			"echo \"Firmware image size : 0x${filesize} bytes.\"; " \
-			"echo \"Flashing image to mmc 0\"; " \
-			"echo \"DO NOT REMOVE POWER OR RESET UNTIL THIS PROCESS IS FINISHED\"; " \
-			"gzwrite mmc 0 ${loadaddr} ${filesize}; " \
-			"reset; " \
+	"mmcrecoverycmd=echo \"Initialising recovery ramfs\"; " \
+		"if usb reset && load usb 0 ${initrd_addr} polarrecoveryfw.bin; then " \
+			"echo \"Booting into recovery ramfs from USB 0\"; " \
+			"bootm ${initrd_addr}; " \
 		"else " \
-			"echo \"Failed to load firmware file from USB 0\"; " \
+			"echo \"Failed to load recovery ramfs from USB 0\"; " \
+			"run mmcbootcmd ; " \
 		"fi;\0" \
 
 #define CONFIG_BOOTCOMMAND \
