@@ -157,11 +157,22 @@
 		"booti ${loadaddr} - ${fdt_addr}; " \
 	"fi;\0" \
 	"mmcrecoverycmd=echo \"Initialising recovery ramfs\"; " \
-		"if usb reset && load usb 0 ${initrd_addr} polarrecoveryfw.bin; then " \
-			"echo \"Booting into recovery ramfs from USB 0\"; " \
-			"bootm ${initrd_addr}; " \
+		"if usb reset ; then " \
+			"if load usb 0 ${initrd_addr} polar-screen-0.recovery; then " \
+				"echo \"Booting into recovery ramfs from USB 0\"; " \
+				"bootm ${initrd_addr}; " \
+			"elif load usb 0 ${loadaddr} polar-screen-0.img; then " \
+				"echo \"Firmware image size : 0x${filesize} bytes.\"; " \
+				"echo \"Flashing image to mmc 0\"; " \
+				"echo \"DO NOT REMOVE POWER OR RESET UNTIL THIS PROCESS IS FINISHED\"; " \
+				"gzwrite mmc 0 ${loadaddr} ${filesize}; " \
+				"reset; " \
+			"else " \
+				"echo \"Failed to load any recovery image from USB. \"; " \
+				"run mmcbootcmd ; " \
+			"fi " \
 		"else " \
-			"echo \"Failed to load recovery ramfs from USB 0\"; " \
+			"echo \"Failed to initialize USB subsystem\"; " \
 			"run mmcbootcmd ; " \
 		"fi;\0" \
 
