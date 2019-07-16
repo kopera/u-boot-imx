@@ -156,7 +156,7 @@
 		"setenv bootargs console=${console} root=${mmcroot} rootwait vt.global_cursor_default=0 panic=-1; " \
 		"booti ${loadaddr} - ${fdt_addr}; " \
 	"fi;\0" \
-	"mmcrecoverycmd=echo \"Initialising recovery ramfs\"; " \
+	"mmcrecoverycmd=echo \"Initialising recovery process\"; " \
 		"if usb reset ; then " \
 			"if load usb 0 ${initrd_addr} polar-screen-0.recovery; then " \
 				"echo \"Booting into recovery ramfs from USB 0\"; " \
@@ -170,7 +170,7 @@
 			"else " \
 				"echo \"Failed to load any recovery image from USB. \"; " \
 				"run mmcbootcmd ; " \
-			"fi " \
+			"fi ;" \
 		"else " \
 			"echo \"Failed to initialize USB subsystem\"; " \
 			"run mmcbootcmd ; " \
