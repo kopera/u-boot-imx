@@ -99,11 +99,14 @@
 #define CONFIG_PHY_ATHEROS
 #endif
 
+#define CONFIG_SYS_BOOTM_LEN		0xF000000
+
 /* Initial environment variables */
 #define CONFIG_EXTRA_ENV_SETTINGS		\
 	"bootdir=/boot\0" \
 	"image=Image.gz\0" \
 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	"initrd_file=initramfs\0" \
 	"console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200\0" \
 	\
 	"img_addr=0x42000000\0" \
@@ -122,6 +125,11 @@
 	"mmcloadimagecmd=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image}; " \
 		"unzip ${img_addr} ${loadaddr};\0" \
 	"mmcloadfdtcmd=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file};\0" \
+	"mmcloadinitrdcmd=if load mmc ${mmcdev}:${mmcpart} ${initrd_addr} ${bootdir}/${initrd_file}; then " \
+			"setenv mmcbootcmd_initrd ${initrd_addr}; " \
+		"else " \
+			"setenv mmcbootcmd_initrd -; " \
+		"fi;\0" \
 	"mmcselectpartcmd=setenv mmcpart; " \
 		"for BOOT_SLOT in \"${BOOT_ORDER}\"; do " \
 			"if test \"x${mmcpart}\" = \"x\"; then " \
@@ -141,7 +149,9 @@
 			"fi; " \
 		"done; " \
 		"if test -n \"${mmcpart}\"; then " \
-			"setenv mmcroot /dev/mmcblk${mmcdev}p${mmcpart}; " \
+			"setenv mmcroot_blk ${mmcdev}; " \
+			"setenv mmcroot_part ${mmcpart}; " \
+			"setenv mmcroot /dev/mmcblk${mmcroot_blk}p${mmcroot_part}; " \
 			"saveenv; " \
 		"else " \
 			"echo \"No valid slot found, resetting tries to 3\"; " \
@@ -150,19 +160,29 @@
 			"saveenv; " \
 			"reset; " \
 		"fi;\0" \
-	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadfdtcmd; then " \
-		"setenv bootargs console=${console} root=${mmcroot} rootwait vt.global_cursor_default=0 panic=-1; " \
-		"booti ${loadaddr} - ${fdt_addr}; " \
+	"mmcbootcmd_args=rootwait vt.global_cursor_default=0 panic=-1\0" \
+	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadinitrdcmd && run mmcloadfdtcmd; then " \
+		"setenv bootargs console=${console} root=${mmcroot} ${mmcbootcmd_args}; " \
+		"booti ${loadaddr} ${mmcbootcmd_initrd} ${fdt_addr}; " \
 	"fi;\0" \
-	"mmcrecoverycmd=echo \"Initialising recovery\"; " \
-		"if usb reset && load usb 0 ${loadaddr} polarfw.bin; then " \
-			"echo \"Firmware image size : 0x${filesize} bytes.\"; " \
-			"echo \"Flashing image to mmc 0\"; " \
-			"echo \"DO NOT REMOVE POWER OR RESET UNTIL THIS PROCESS IS FINISHED\"; " \
-			"gzwrite mmc 0 ${loadaddr} ${filesize}; " \
-			"reset; " \
+	"mmcrecoverycmd=echo \"Initialising recovery process\"; " \
+		"if usb reset ; then " \
+			"if load usb 0 ${initrd_addr} polar-screen-0.recovery; then " \
+				"echo \"Booting into recovery ramfs from USB 0\"; " \
+				"bootm ${initrd_addr}; " \
+			"elif load usb 0 ${loadaddr} polar-screen-0.img; then " \
+				"echo \"Firmware image size : 0x${filesize} bytes.\"; " \
+				"echo \"Flashing image to mmc 0\"; " \
+				"echo \"DO NOT REMOVE POWER OR RESET UNTIL THIS PROCESS IS FINISHED\"; " \
+				"gzwrite mmc 0 ${loadaddr} ${filesize}; " \
+				"reset; " \
+			"else " \
+				"echo \"Failed to load any recovery image from USB. \"; " \
+				"run mmcbootcmd ; " \
+			"fi ;" \
 		"else " \
-			"echo \"Failed to load firmware file from USB 0\"; " \
+			"echo \"Failed to initialize USB subsystem\"; " \
+			"run mmcbootcmd ; " \
 		"fi;\0" \
 
 #define CONFIG_BOOTCOMMAND \
