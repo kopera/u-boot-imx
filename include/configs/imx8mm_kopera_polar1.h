@@ -103,6 +103,7 @@
 	"bootdir=/boot\0" \
 	"image=Image.gz\0" \
 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	"initrd_file=initramfs\0" \
 	"console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200\0" \
 	\
 	"img_addr=0x42000000\0" \
@@ -115,15 +116,17 @@
 	"BOOT_A_LEFT=3\0" \
 	"BOOT_B_LEFT=3\0" \
 	\
-	"commonbootargs=rootwait vt.global_cursor_default=0 panic=-1\0" \
-	\
 	"mmcdev="__stringify(CONFIG_SYS_MMC_ENV_DEV)"\0" \
-	"mmcrootdev=2\0" \
 	"mmcpart=" __stringify(CONFIG_SYS_MMC_IMG_LOAD_PART) "\0" \
 	"mmcroot=" CONFIG_MMCROOT "\0" \
 	"mmcloadimagecmd=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image}; " \
 		"unzip ${img_addr} ${loadaddr};\0" \
 	"mmcloadfdtcmd=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file};\0" \
+	"mmcloadinitrdcmd=if load mmc ${mmcdev}:${mmcpart} ${initrd_addr} ${bootdir}/${initrd_file}; then " \
+			"setenv mmcbootcmd_initrd ${initrd_addr}; " \
+		"else " \
+			"setenv mmcbootcmd_initrd -; " \
+		"fi;\0" \
 	"mmcselectpartcmd=setenv mmcpart; " \
 		"for BOOT_SLOT in \"${BOOT_ORDER}\"; do " \
 			"if test \"x${mmcpart}\" = \"x\"; then " \
@@ -143,7 +146,9 @@
 			"fi; " \
 		"done; " \
 		"if test -n \"${mmcpart}\"; then " \
-			"setenv mmcroot /dev/mmcblk${mmcrootdev}p${mmcpart}; " \
+			"setexpr mmcroot_blk ${mmcdev} + 1; " \
+			"setenv mmcroot_part ${mmcpart}; " \
+			"setenv mmcroot /dev/mmcblk${mmcroot_blk}p${mmcroot_part}; " \
 			"saveenv; " \
 		"else " \
 			"echo \"No valid slot found, resetting tries to 3\"; " \
@@ -152,20 +157,29 @@
 			"saveenv; " \
 			"reset; " \
 		"fi;\0" \
-	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadfdtcmd; then " \
-		"setenv bootargs console=${console} root=${mmcroot} ${commonbootargs}; " \
-		"booti ${loadaddr} - ${fdt_addr}; " \
+	"mmcbootcmd_bootargs=rootwait vt.global_cursor_default=0 panic=-1\0" \
+	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadinitrdcmd && run mmcloadfdtcmd; then " \
+		"setenv bootargs console=${console} root=${mmcroot} ${mmcbootcmd_bootargs}; " \
+		"booti ${loadaddr} ${mmcbootcmd_initrd} ${fdt_addr}; " \
 	"fi;\0" \
 	"mmcrecoverycmd=echo \"Initialising recovery\"; " \
-		"if usb reset && load usb 0 ${loadaddr} imx8mm-kopera-polar1.wic.gz; then " \
-			"echo \"Firmware image size : 0x${filesize} bytes.\"; " \
-			"echo \"Flashing image to mmc ${mmcdev}\"; " \
-			"echo \"DO NOT REMOVE POWER OR RESET UNTIL THIS PROCESS IS FINISHED\"; " \
-			"gzwrite mmc ${mmcdev} ${loadaddr} ${filesize}; " \
-			"reset; " \
+		"if usb reset ; then " \
+			"if load usb 0 ${initrd_addr} polar-screen-1.recovery; then " \
+				"echo \"Booting into recovery ramfs from USB 0\"; " \
+				"bootm ${initrd_addr}; " \
+			"elif load usb 0 ${loadaddr} polar-screen-1.img; then " \
+				"echo \"Firmware image size : 0x${filesize} bytes.\"; " \
+				"echo \"Flashing image to mmc 0\"; " \
+				"echo \"DO NOT REMOVE POWER OR RESET UNTIL THIS PROCESS IS FINISHED\"; " \
+				"gzwrite mmc 0 ${loadaddr} ${filesize}; " \
+				"reset; " \
+			"else " \
+				"echo \"Failed to load any recovery image from USB. \"; " \
+				"run mmcbootcmd ; " \
+			"fi ;" \
 		"else " \
-			"echo \"Failed to load firmware file from USB 0\"; " \
-			"run mmcbootcmd; " \
+			"echo \"Failed to initialize USB subsystem\"; " \
+			"run mmcbootcmd ; " \
 		"fi;\0" \
 
 #define CONFIG_BOOTCOMMAND \
