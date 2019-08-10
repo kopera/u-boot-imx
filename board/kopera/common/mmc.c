@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 Freescale Semiconductor, Inc.
  * Copyright 2018 NXP
+ * Copyright 2019 KOPERA
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -13,38 +14,38 @@
 
 static int check_mmc_autodetect(void)
 {
-	char *autodetect_str = env_get("mmcautodetect");
-
-	if ((autodetect_str != NULL) &&
-		(strcmp(autodetect_str, "yes") == 0)) {
-		return 1;
-	}
-
-	return 0;
+	return env_get_yesno("mmcautodetect") == 1;
 }
 
 /* This should be defined for each board */
-__weak int mmc_map_to_kernel_blk(int dev_no)
+__weak int mmc_map_to_kernel_blk(int devno)
 {
-	return dev_no;
+	return devno;
 }
 
 void board_late_mmc_env_init(void)
 {
 	char cmd[32];
-	char mmcblk[32];
-	u32 dev_no = mmc_get_env_dev();
+	char mmcroot[32];
+	u32 devno;
+	ulong mmcpart;
+	ulong mmcrootdev;
 
 	if (!check_mmc_autodetect())
 		return;
 
-	env_set_ulong("mmcdev", dev_no);
+	devno = mmc_get_env_dev();
+	mmcpart = env_get_ulong("mmcpart", 10, 1);
 
-	/* Set mmcblk env */
-	sprintf(mmcblk, "/dev/mmcblk%dp1 rootwait rw",
-		mmc_map_to_kernel_blk(dev_no));
-	env_set("mmcroot", mmcblk);
+	env_set_ulong("mmcdev", devno);
 
-	sprintf(cmd, "mmc dev %d", dev_no);
+	/* Set mmcroot env */
+	mmcrootdev = mmc_map_to_kernel_blk(devno);
+
+	env_set_ulong("mmcrootdev", mmcrootdev);
+	sprintf(mmcroot, "/dev/mmcblk%up%lu", mmcrootdev, mmcpart);
+	env_set("mmcroot", mmcroot);
+
+	sprintf(cmd, "mmc dev %u", devno);
 	run_command(cmd, 0);
 }
