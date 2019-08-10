@@ -199,9 +199,9 @@ int board_mmc_get_env_dev(int devno)
 	return devno;
 }
 
-int mmc_map_to_kernel_blk(int dev_no)
+int mmc_map_to_kernel_blk(int devno)
 {
-	return dev_no;
+	return devno;
 }
 
 int board_late_init(void)

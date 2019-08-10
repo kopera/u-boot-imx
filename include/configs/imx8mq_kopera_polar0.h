@@ -143,7 +143,9 @@
 			"fi; " \
 		"done; " \
 		"if test -n \"${mmcpart}\"; then " \
-			"setenv mmcroot /dev/mmcblk${mmcdev}p${mmcpart}; " \
+			"setenv mmcroot_blk ${mmcdev}; " \
+			"setenv mmcroot_part ${mmcpart}; " \
+			"setenv mmcroot /dev/mmcblk${mmcroot_blk}p${mmcroot_part}; " \
 			"saveenv; " \
 		"else " \
 			"echo \"No valid slot found, resetting tries to 3\"; " \
@@ -152,8 +154,9 @@
 			"saveenv; " \
 			"reset; " \
 		"fi;\0" \
+	"mmcbootcmd_args=rootwait vt.global_cursor_default=0 panic=-1\0" \
 	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadfdtcmd; then " \
-		"setenv bootargs console=${console} root=${mmcroot} rootwait vt.global_cursor_default=0 panic=-1; " \
+		"setenv bootargs console=${console} root=${mmcroot} ${mmcbootcmd_args}; " \
 		"booti ${loadaddr} - ${fdt_addr}; " \
 	"fi;\0" \
 	"mmcrecoverycmd=echo \"Initialising recovery process\"; " \
