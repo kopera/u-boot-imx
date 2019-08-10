@@ -106,6 +106,7 @@
 	"bootdir=/boot\0" \
 	"image=Image.gz\0" \
 	"fdt_file=" CONFIG_DEFAULT_FDT_FILE "\0" \
+	"initrd_file=initramfs\0" \
 	"console=ttymxc0,115200 earlycon=ec_imx6q,0x30860000,115200\0" \
 	\
 	"img_addr=0x42000000\0" \
@@ -124,6 +125,11 @@
 	"mmcloadimagecmd=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image}; " \
 		"unzip ${img_addr} ${loadaddr};\0" \
 	"mmcloadfdtcmd=load mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${bootdir}/${fdt_file};\0" \
+	"mmcloadinitrdcmd=if load mmc ${mmcdev}:${mmcpart} ${initrd_addr} ${bootdir}/${initrd_file}; then " \
+			"setenv mmcbootcmd_initrd ${initrd_addr}; " \
+		"else " \
+			"setenv mmcbootcmd_initrd -; " \
+		"fi;\0" \
 	"mmcselectpartcmd=setenv mmcpart; " \
 		"for BOOT_SLOT in \"${BOOT_ORDER}\"; do " \
 			"if test \"x${mmcpart}\" = \"x\"; then " \
@@ -155,9 +161,9 @@
 			"reset; " \
 		"fi;\0" \
 	"mmcbootcmd_args=rootwait vt.global_cursor_default=0 panic=-1\0" \
-	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadfdtcmd; then " \
+	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadinitrdcmd && run mmcloadfdtcmd; then " \
 		"setenv bootargs console=${console} root=${mmcroot} ${mmcbootcmd_args}; " \
-		"booti ${loadaddr} - ${fdt_addr}; " \
+		"booti ${loadaddr} ${mmcbootcmd_initrd} ${fdt_addr}; " \
 	"fi;\0" \
 	"mmcrecoverycmd=echo \"Initialising recovery process\"; " \
 		"if usb reset ; then " \
