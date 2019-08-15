@@ -172,9 +172,9 @@
 				"bootm ${initrd_addr}; " \
 			"elif load usb 0 ${loadaddr} polar-screen-0.img; then " \
 				"echo \"Firmware image size : 0x${filesize} bytes.\"; " \
-				"echo \"Flashing image to mmc 0\"; " \
+				"echo \"Flashing image to mmc ${mmcdev}\"; " \
 				"echo \"DO NOT REMOVE POWER OR RESET UNTIL THIS PROCESS IS FINISHED\"; " \
-				"gzwrite mmc 0 ${loadaddr} ${filesize}; " \
+				"gzwrite mmc ${mmcdev} ${loadaddr} ${filesize}; " \
 				"reset; " \
 			"else " \
 				"echo \"Failed to load any recovery image from USB. \"; " \
