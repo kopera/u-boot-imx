@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 Freescale Semiconductor, Inc.
  * Copyright 2018 NXP
+ * Copyright 2019 KOPERA
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */
@@ -13,6 +14,7 @@
 
 static int check_mmc_autodetect(void)
 {
+	/* env_get_yesno return 0, 1 or -1 */
 	return env_get_yesno("mmcautodetect") == 1;
 }
 
