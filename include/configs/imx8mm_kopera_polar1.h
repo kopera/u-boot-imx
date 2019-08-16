@@ -157,7 +157,7 @@
 			"saveenv; " \
 			"reset; " \
 		"fi;\0" \
-	"mmcbootcmd_bootargs=rootwait vt.global_cursor_default=0 panic=-1\0" \
+	"mmcbootcmd_bootargs=ro rootwait vt.global_cursor_default=0 panic=-1\0" \
 	"mmcbootcmd=if run mmcselectpartcmd && run mmcloadimagecmd && run mmcloadinitrdcmd && run mmcloadfdtcmd; then " \
 		"setenv bootargs console=${console} root=${mmcroot} ${mmcbootcmd_bootargs}; " \
 		"booti ${loadaddr} ${mmcbootcmd_initrd} ${fdt_addr}; " \
